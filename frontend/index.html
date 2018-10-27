@@ -21,7 +21,7 @@
     <div id="mapId"></div>
     <script type="text/javascript">
     // center the map at Namba station, Osaka
-    var myMap = L.map('mapId').setView([34.667330, 135.500235], 14);
+    var map = L.map('mapId').setView([34.667330, 135.500235], 13);
 
     // add tite layer
     var token = 'pk.eyJ1Ijoia2VubmV0aG5naGsiLCJhIjoiY2pucXZsbjRvMDF1NTNwbW5mdXBlcXQwYiJ9.i_mwJiu1BU029CAcVEm7rw';
@@ -30,10 +30,27 @@
         maxZoom: 18,
         id: 'mapbox.streets',
         accessToken: token
-    }).addTo(myMap);
+    }).addTo(map);
 
     // add tile layer by openstreetmap (but not stable) 
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(myMap);
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // add markers
+    var locations = [
+        {
+            name: 'Osaka Castle',
+            latLng: [34.687607, 135.525966]
+        },
+        {
+            name: 'Kaiyukan',
+            latLng: [34.654739, 135.429018]
+        }
+    ];
+
+    locations.forEach(function(location){
+        L.marker(location.latLng, {title: location.name}).addTo(map);
+    });
+    
     </script>
 </body>
 </html>
