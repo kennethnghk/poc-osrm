@@ -46,5 +46,16 @@ In above example, it is routing from [Osaka Castle, Osaka](https://goo.gl/maps/7
 
 **Note that the lat/log order is the reverse of those obtained from Google Map.**
 
+## Setup frontend
 
+1. Build docker image
 
+```sh
+docker build -t poc-osrm:latest .
+```
+
+2. Run docker
+
+```sh
+docker run -p 80:80 poc-osrm:latest
+```
