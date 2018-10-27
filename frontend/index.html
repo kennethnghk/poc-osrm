@@ -50,7 +50,44 @@
     locations.forEach(function(location){
         L.marker(location.latLng, {title: location.name}).addTo(map);
     });
+
+    function reverseLaglng(latLng) {
+        return [latLng[1], latLng[0]];
+    }
+    function formatLagLng(latLng) {
+        // for osrm API, need to reverse the latlng
+        return reverseLaglng(latLng).join(',');
+    }
+
+    function buildApiUrl(locations) {
+        var startLatLng = formatLagLng(locations[0].latLng);
+        var endLatLng = formatLagLng(locations[1].latLng);
+
+        return 'http://127.0.0.1:5000/route/v1/driving/'+startLatLng+';'+endLatLng+'?steps=true';
+    }
     
+    // start plotting the route on map
+    var waypoints = [];
+    fetch(buildApiUrl(locations))
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(data) {
+            if (data.code === 'Ok') {
+                var route = data.routes[0];
+                route.legs[0].steps.forEach(function(step) {
+                    step.intersections.forEach(function(intersection) {
+                        waypoints.push(reverseLaglng(intersection.location));
+                    })
+                })
+
+                waypoints.forEach(function(waypoint) {
+                    L.marker(waypoint).addTo(map);
+                })
+
+                L.polyline(waypoints, {color: 'red'}).addTo(map);
+            }
+        });        
     </script>
 </body>
 </html>
