@@ -1,10 +1,10 @@
-import React, {Component} from "react"
+import React, {Component, Fragment} from "react"
 import L from "leaflet"
 import "./index.css"
 import { get } from "lodash"
 import { fetchRoute } from "../../services/api"
 import routeParser from "../../utils/routeParser"
-import { reverseLaglng } from "../../utils/location" 
+import { reverseLaglng, formatLagLng } from "../../utils/location" 
 
 const TOKEN = "pk.eyJ1Ijoia2VubmV0aG5naGsiLCJhIjoiY2pucXZsbjRvMDF1NTNwbW5mdXBlcXQwYiJ9.i_mwJiu1BU029CAcVEm7rw"
 
@@ -70,6 +70,11 @@ export default class HomePage extends Component {
 	}
 
 	render() {
-		return <div id="map"></div>
+		return (
+			<Fragment>
+			<div className="header">It is showing the route from {LOCATIONS[0].name} ({formatLagLng(LOCATIONS[0].latLng)}) to {LOCATIONS[1].name} ({formatLagLng(LOCATIONS[1].latLng)})</div>
+		<div id="map"></div>
+		</Fragment>
+		)
 	}
 }
