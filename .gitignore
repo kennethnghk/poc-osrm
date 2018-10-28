@@ -1,3 +1,5 @@
+node_modules
+
 // ignore the extracted osrm files
 *.osrm.*
 *.osm.*
