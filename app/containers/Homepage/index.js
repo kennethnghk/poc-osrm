@@ -1,22 +1,59 @@
-/*
- * HomePage
- *
- * This is the first thing users see of our App, at the '/' route
- *
- * NOTE: while this component should technically be a stateless functional
- * component (SFC), hot reloading does not currently support SFCs. If hot
- * reloading is not a necessity for you then you can refactor it and remove
- * the linting exception.
- */
-
 import React, {Component} from "react"
 import L from "leaflet"
 import "./index.css"
+import { get } from "lodash"
+import { fetchRoute } from "../../services/api"
+import routeParser from "../../utils/routeParser"
+import { reverseLaglng } from "../../utils/location" 
 
 const TOKEN = "pk.eyJ1Ijoia2VubmV0aG5naGsiLCJhIjoiY2pucXZsbjRvMDF1NTNwbW5mdXBlcXQwYiJ9.i_mwJiu1BU029CAcVEm7rw"
 
+const LOCATIONS = [
+	{
+		name: "Osaka Castle",
+		latLng: [34.687607, 135.525966]
+	},
+	{
+		name: "Kaiyukan",
+		latLng: [34.654739, 135.429018]
+	}
+]
+
 /* eslint-disable react/prefer-stateless-function */
 export default class HomePage extends Component {
+	map
+
+	plotRoute = () => {
+		LOCATIONS.forEach((location) => {
+			L.marker(location.latLng, {title: location.name}).addTo(this.map)
+		})
+
+		fetchRoute(LOCATIONS).then((data) => {
+			if (data.code === "Ok") {
+				const route = routeParser.getRoutes(data)[0]
+				if (route) {
+					const leg = routeParser.getLegs(route)[0]
+					if (leg) {
+						const waypoints = []
+						const steps = routeParser.getSteps(leg)
+						steps.forEach(step => {
+							const intersections = routeParser.getIntersections(step)
+							intersections.forEach(intersection => {
+								const location = get(intersection, "location")
+								if (location) {
+									waypoints.push(reverseLaglng(location))
+								}
+							})
+						})
+
+						waypoints.forEach(waypoint => L.marker(waypoint).addTo(this.map))
+						L.polyline(waypoints, {color: "red"}).addTo(this.map)
+					}
+				}
+            }
+		})
+	}
+
 	componentDidMount() {
 		// create map
 		this.map = L.map("map", {
@@ -24,10 +61,12 @@ export default class HomePage extends Component {
 			zoom: 13,
 			layers: [
 				L.tileLayer("https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token="+TOKEN, {
-					attribution: "&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors"
+					attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>"
 				}),
 			]
 		})
+
+		this.plotRoute()
 	}
 
 	render() {
