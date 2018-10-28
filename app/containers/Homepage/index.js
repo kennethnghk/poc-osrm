@@ -2,7 +2,7 @@ import React, {Component, Fragment} from "react"
 import L from "leaflet"
 import "./index.css"
 import { get } from "lodash"
-import { fetchRoute } from "../../services/api"
+import { fetchRoute, PROFILE_BICYCLE, PROFILE_CAR } from "../../services/api"
 import routeParser from "../../utils/routeParser"
 import { reverseLaglng, formatLagLng } from "../../utils/location" 
 
@@ -23,12 +23,12 @@ const LOCATIONS = [
 export default class HomePage extends Component {
 	map
 
-	plotRoute = () => {
+	plotRoute = (profile = PROFILE_CAR) => {
 		LOCATIONS.forEach((location) => {
 			L.marker(location.latLng, {title: location.name}).addTo(this.map)
 		})
 
-		fetchRoute(LOCATIONS).then((data) => {
+		fetchRoute(LOCATIONS, profile).then((data) => {
 			if (data.code === "Ok") {
 				const route = routeParser.getRoutes(data)[0]
 				if (route) {
@@ -65,14 +65,13 @@ export default class HomePage extends Component {
 				}),
 			]
 		})
-
-		this.plotRoute()
 	}
 
 	render() {
 		return (
 			<Fragment>
 			<div className="header">It is showing the route from {LOCATIONS[0].name} ({formatLagLng(LOCATIONS[0].latLng)}) to {LOCATIONS[1].name} ({formatLagLng(LOCATIONS[1].latLng)})</div>
+			<div className="panel"><button onClick={() => this.plotRoute(PROFILE_CAR)}>Route by car</button><button onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Route by bike</button></div>
 		<div id="map"></div>
 		</Fragment>
 		)
