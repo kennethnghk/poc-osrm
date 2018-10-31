@@ -19,6 +19,11 @@ const LOCATIONS = [
 	}
 ]
 
+const profileColors = {
+	[PROFILE_CAR] : "red",
+	[PROFILE_BICYCLE] : "yellow"
+}
+
 /* eslint-disable react/prefer-stateless-function */
 export default class HomePage extends Component {
 	map
@@ -47,7 +52,7 @@ export default class HomePage extends Component {
 						})
 
 						waypoints.forEach(waypoint => L.marker(waypoint).addTo(this.map))
-						L.polyline(waypoints, {color: "red"}).addTo(this.map)
+						L.polyline(waypoints, {color: get(profileColors, profile, "red")}).addTo(this.map)
 					}
 				}
             }
