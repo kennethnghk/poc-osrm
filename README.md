@@ -83,5 +83,5 @@ Then you can run the frontend web by http://localhost:3000/
 You can also mount the host directory to container directory, for faster development.
 
 ```sh
-docker run -v $(pwd):/var/www/app -it poc-osrm:latest /bin/bash
+docker run -v $(pwd):/var/www/app -p 3000:3000 poc-osrm:latest
 ```
