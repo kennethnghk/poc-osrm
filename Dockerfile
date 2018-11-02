@@ -1,4 +1,9 @@
-FROM nginx:latest
+FROM node:latest
 
-COPY frontend /usr/share/nginx/html
+RUN mkdir -p /var/www/app
+WORKDIR /var/www/app
 
+ADD . /var/www/app
+RUN yarn
+
+ENTRYPOINT yarn start
