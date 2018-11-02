@@ -7,17 +7,6 @@ import { fetchRoute } from "../../services/api"
 import routeParser from "../../utils/routeParser"
 import { reverseLaglng, formatLagLng } from "../../utils/location" 
 
-const LOCATIONS = [
-	{
-		name: "Osaka Castle",
-		latLng: [34.687607, 135.525966]
-	},
-	{
-		name: "Kaiyukan",
-		latLng: [34.654739, 135.429018]
-	}
-]
-
 const Container = styled.div`
 	width:100%;
 	display: flex;
@@ -60,6 +49,8 @@ const RouteOption = styled.div`
 export default class HomePage extends Component {
 	map
 	routeLine
+	startLocation
+	endLocation
 
 	constructor(props) {
 		super(props)
@@ -81,11 +72,14 @@ export default class HomePage extends Component {
 
 		this.setState({selectedProfile: profile})
 
-		LOCATIONS.forEach((location) => {
-			L.marker(location.latLng, {title: location.name}).addTo(this.map)
-		})
+		const startLagLng = this.startLocation.split(",")
+		const endLagLng = this.endLocation.split(",")
 
-		fetchRoute(LOCATIONS, profile).then((data) => {
+		// add markers
+		L.marker(startLagLng, {title: "START"}).addTo(this.map)
+		L.marker(endLagLng, {title: "END"}).addTo(this.map)
+
+		fetchRoute(startLagLng, endLagLng, profile).then((data) => {
 			if (data.code === "Ok") {
 				const route = routeParser.getRoutes(data)[0]
 				if (route) {
@@ -129,8 +123,8 @@ export default class HomePage extends Component {
 		return (
 			<Panel>
 				<h1>OSRM POC</h1>
-				<Location>Start: {formatLagLng(LOCATIONS[0].latLng)}</Location>
-				<Location>End: {formatLagLng(LOCATIONS[1].latLng)}</Location>
+				<Location>Start: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.startLocation  = e.target.value}}></input></Location>
+				<Location>End: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.endLocation  = e.target.value}}></input></Location>
 				<hr />
 				<RouteTitle>Routes: </RouteTitle>
 				<RouteContainer>
