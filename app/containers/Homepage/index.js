@@ -2,11 +2,10 @@ import React, {Component, Fragment} from "react"
 import L from "leaflet"
 import styled from 'styled-components'
 import { get } from "lodash"
-import { fetchRoute, PROFILE_BICYCLE, PROFILE_CAR } from "../../services/api"
+import { MAPBOX_TOKEN, PROFILE_BICYCLE, PROFILE_CAR, profiles } from "../../configs"
+import { fetchRoute } from "../../services/api"
 import routeParser from "../../utils/routeParser"
 import { reverseLaglng, formatLagLng } from "../../utils/location" 
-
-const TOKEN = "pk.eyJ1Ijoia2VubmV0aG5naGsiLCJhIjoiY2pucXZsbjRvMDF1NTNwbW5mdXBlcXQwYiJ9.i_mwJiu1BU029CAcVEm7rw"
 
 const LOCATIONS = [
 	{
@@ -18,11 +17,6 @@ const LOCATIONS = [
 		latLng: [34.654739, 135.429018]
 	}
 ]
-
-const profileColors = {
-	[PROFILE_CAR] : "red",
-	[PROFILE_BICYCLE] : "yellow"
-}
 
 const Map = styled.div`
 	width: 100%;
@@ -61,7 +55,7 @@ export default class HomePage extends Component {
 						})
 
 						waypoints.forEach(waypoint => L.marker(waypoint).addTo(this.map))
-						L.polyline(waypoints, {color: get(profileColors, profile, "red")}).addTo(this.map)
+						L.polyline(waypoints, {color: get(profiles, [profile, "color"])}).addTo(this.map)
 					}
 				}
             }
@@ -74,7 +68,7 @@ export default class HomePage extends Component {
 			center: [34.667330, 135.500235],
 			zoom: 13,
 			layers: [
-				L.tileLayer("https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token="+TOKEN, {
+				L.tileLayer("https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token="+MAPBOX_TOKEN, {
 					attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>"
 				}),
 			]
