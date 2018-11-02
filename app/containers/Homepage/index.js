@@ -18,20 +18,69 @@ const LOCATIONS = [
 	}
 ]
 
+const Container = styled.div`
+	width:100%;
+	display: flex;
+	flex-direction: row;
+`
+
 const Map = styled.div`
-	width: 100%;
+	width: 80%;
 	height: 800px;
 `
 
-const Header = styled.div`
-    padding: 10px 5px;
+const Panel = styled.div`
+	width: 20%;
+	height: 800px;
+	padding: 10px;
+`
+
+const Location = styled.div`
+	background: #f1f1f1;
+`
+
+const RouteTitle = styled.div`
+	margin: 20px 0 0 0;
+`
+
+const RouteContainer = styled.div`
+	width:100%;
+	display: flex;
+	flex-direction: row;
+`
+
+const RouteOption = styled.div`
+	border: 1px solid #c4c4c4;
+	width: 50%;
+	padding: 0 0 0 10px;
+	background: ${props => props.isSelected ? "#c4c4c4" : "#fff"};
 `
 
 /* eslint-disable react/prefer-stateless-function */
 export default class HomePage extends Component {
 	map
+	routeLine
+
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			selectedProfile : null
+		}
+	}
 
 	plotRoute = (profile = PROFILE_CAR) => {
+
+		if (this.state.selectedProfile === profile) {
+			return
+		}
+
+		if (this.map && this.routeLine) {
+			this.map.removeLayer(this.routeLine)
+		}
+
+		this.setState({selectedProfile: profile})
+
 		LOCATIONS.forEach((location) => {
 			L.marker(location.latLng, {title: location.name}).addTo(this.map)
 		})
@@ -54,8 +103,7 @@ export default class HomePage extends Component {
 							})
 						})
 
-						waypoints.forEach(waypoint => L.marker(waypoint).addTo(this.map))
-						L.polyline(waypoints, {color: get(profiles, [profile, "color"])}).addTo(this.map)
+						this.routeLine = L.polyline(waypoints, {color: get(profiles, [profile, "color"])}).addTo(this.map)
 					}
 				}
             }
@@ -75,13 +123,30 @@ export default class HomePage extends Component {
 		})
 	}
 
+	renderPanel = () => {
+		const selectedProfile = this.state.selectedProfile
+
+		return (
+			<Panel>
+				<h1>OSRM POC</h1>
+				<Location>Start: {formatLagLng(LOCATIONS[0].latLng)}</Location>
+				<Location>End: {formatLagLng(LOCATIONS[1].latLng)}</Location>
+				<hr />
+				<RouteTitle>Routes: </RouteTitle>
+				<RouteContainer>
+					<RouteOption isSelected={(selectedProfile === PROFILE_CAR)} onClick={() => this.plotRoute(PROFILE_CAR)}>Car</RouteOption>
+					<RouteOption isSelected={(selectedProfile === PROFILE_BICYCLE)} onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Bicycle</RouteOption>
+				</RouteContainer>
+			</Panel>
+		)
+	}
+
 	render() {
 		return (
-			<Fragment>
-				<Header>It is showing the route from {LOCATIONS[0].name} ({formatLagLng(LOCATIONS[0].latLng)}) to {LOCATIONS[1].name} ({formatLagLng(LOCATIONS[1].latLng)})</Header>
-				<div className="panel"><button onClick={() => this.plotRoute(PROFILE_CAR)}>Route by car</button><button onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Route by bike</button></div>
+			<Container>
+				{this.renderPanel()}
 				<Map id="map"></Map>
-			</Fragment>
+			</Container>
 		)
 	}
 }
