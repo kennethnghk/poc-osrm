@@ -1,6 +1,6 @@
 import React, {Component, Fragment} from "react"
 import L from "leaflet"
-import "./index.css"
+import styled from 'styled-components'
 import { get } from "lodash"
 import { fetchRoute, PROFILE_BICYCLE, PROFILE_CAR } from "../../services/api"
 import routeParser from "../../utils/routeParser"
@@ -23,6 +23,15 @@ const profileColors = {
 	[PROFILE_CAR] : "red",
 	[PROFILE_BICYCLE] : "yellow"
 }
+
+const Map = styled.div`
+	width: 100%;
+	height: 800px;
+`
+
+const Header = styled.div`
+    padding: 10px 5px;
+`
 
 /* eslint-disable react/prefer-stateless-function */
 export default class HomePage extends Component {
@@ -75,10 +84,10 @@ export default class HomePage extends Component {
 	render() {
 		return (
 			<Fragment>
-			<div className="header">It is showing the route from {LOCATIONS[0].name} ({formatLagLng(LOCATIONS[0].latLng)}) to {LOCATIONS[1].name} ({formatLagLng(LOCATIONS[1].latLng)})</div>
-			<div className="panel"><button onClick={() => this.plotRoute(PROFILE_CAR)}>Route by car</button><button onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Route by bike</button></div>
-		<div id="map"></div>
-		</Fragment>
+				<Header>It is showing the route from {LOCATIONS[0].name} ({formatLagLng(LOCATIONS[0].latLng)}) to {LOCATIONS[1].name} ({formatLagLng(LOCATIONS[1].latLng)})</Header>
+				<div className="panel"><button onClick={() => this.plotRoute(PROFILE_CAR)}>Route by car</button><button onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Route by bike</button></div>
+				<Map id="map"></Map>
+			</Fragment>
 		)
 	}
 }
