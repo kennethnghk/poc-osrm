@@ -71,6 +71,10 @@ export default class HomePage extends Component {
 
 	showRoutes = () => {
 
+		if (!this.startLocation || !this.endLocation) {
+			return
+		}
+
 		// clear prev query
 		this.setState({
 			routes: [],
@@ -174,8 +178,8 @@ export default class HomePage extends Component {
 					{routes.map((route, index) => 
 						<Route key={index} isSelected={(selectedRoute === index)} onClick={() => this.plotRoute(index)}>
 							<div>By {route.profile}</div>
-							<div>Distance {route.distance}</div>
-							<div>Duration {route.duration}</div>
+							<div>Distance {route.distance} m</div>
+							<div>Duration {parseInt(route.duration / 60)} min</div>
 						</Route>
 					)}
 				</RouteContainer>
