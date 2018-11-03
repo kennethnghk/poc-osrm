@@ -5,11 +5,9 @@ export const PROFILE_BICYCLE = "bicycle"
 
 export const profiles = {
     [PROFILE_CAR] : {
-        color: "red",
         apiPort: 5001
     },
     [PROFILE_BICYCLE]: {
-        color: "green",
         apiPort: 5000
     }
 }

@@ -1,11 +1,11 @@
-import React, {Component, Fragment} from "react"
+import React, { Component } from "react"
 import L from "leaflet"
-import styled from 'styled-components'
-import { get } from "lodash"
-import { MAPBOX_TOKEN, PROFILE_BICYCLE, PROFILE_CAR, profiles } from "../../configs"
+import styled from "styled-components"
+import { get, concat } from "lodash"
+import { MAPBOX_TOKEN, profiles } from "../../configs"
 import { fetchRoute } from "../../services/api"
 import routeParser from "../../utils/routeParser"
-import { reverseLaglng, formatLagLng } from "../../utils/location" 
+import { reverseLaglng } from "../../utils/location" 
 
 const Container = styled.div`
 	width:100%;
@@ -34,15 +34,21 @@ const RouteTitle = styled.div`
 
 const RouteContainer = styled.div`
 	width:100%;
-	display: flex;
-	flex-direction: row;
 `
 
-const RouteOption = styled.div`
+const Route = styled.div`
 	border: 1px solid #c4c4c4;
-	width: 50%;
+	width: 100%
 	padding: 0 0 0 10px;
 	background: ${props => props.isSelected ? "#c4c4c4" : "#fff"};
+	margin: 5px 0 0 0;
+`
+
+const GetRouteBtn = styled.div`
+	padding: 5px;
+	marigin: 5px 0 0 0;
+	background: #595959;
+	color: #fff;
 `
 
 /* eslint-disable react/prefer-stateless-function */
@@ -51,18 +57,65 @@ export default class HomePage extends Component {
 	routeLine
 	startLocation
 	endLocation
+	startMarker
+	endMarker
 
 	constructor(props) {
 		super(props)
 
 		this.state = {
-			selectedProfile : null
+			selectedRoute : null,
+			routes: []
 		}
 	}
 
-	plotRoute = (profile = PROFILE_CAR) => {
+	showRoutes = () => {
 
-		if (this.state.selectedProfile === profile) {
+		// clear prev query
+		this.setState({
+			routes: [],
+			selectedRoute : null
+		})
+
+		if (this.map) {
+			this.startMarker && this.map.removeLayer(this.startMarker)
+			this.endMarker && this.map.removeLayer(this.endMarker)
+			this.routeLine && this.map.removeLayer(this.routeLine)
+		}
+
+		const startLagLng = this.startLocation.split(",")
+		const endLagLng = this.endLocation.split(",")
+
+		// add markers
+		this.startMarker = L.marker(startLagLng, {title: "START"}).addTo(this.map)
+		this.endMarker = L.marker(endLagLng, {title: "END"}).addTo(this.map)
+
+		Object.keys(profiles).forEach(profile => {
+			this.getRoutesFromApi(startLagLng, endLagLng, profile).then(routes => {
+				routes = routes.map(route => {
+					route.profile = profile
+					return route
+				})
+
+				this.setState({
+					routes : concat(this.state.routes, routes)
+				})
+			})
+		})
+	}
+
+	getRoutesFromApi = (startLagLng, endLagLng, profile) => {
+		return fetchRoute(startLagLng, endLagLng, profile).then(data => {
+			if (data.code === "Ok") {
+				return routeParser.getRoutes(data)
+			}
+			return []
+		})
+
+	}
+
+	plotRoute = (routeIndex) => {
+		if (routeIndex === null || this.state.selectedRoute === routeIndex) {
 			return
 		}
 
@@ -70,38 +123,27 @@ export default class HomePage extends Component {
 			this.map.removeLayer(this.routeLine)
 		}
 
-		this.setState({selectedProfile: profile})
+		this.setState({selectedRoute: routeIndex})
 
-		const startLagLng = this.startLocation.split(",")
-		const endLagLng = this.endLocation.split(",")
+		const route = get(this.state, ["routes", routeIndex])
+		if (route) {
+			const leg = routeParser.getLegs(route)[0]
+			if (leg) {
+				const waypoints = []
+				const steps = routeParser.getSteps(leg)
+				steps.forEach(step => {
+					const intersections = routeParser.getIntersections(step)
+					intersections.forEach(intersection => {
+						const location = get(intersection, "location")
+						if (location) {
+							waypoints.push(reverseLaglng(location))
+						}
+					})
+				})
 
-		// add markers
-		L.marker(startLagLng, {title: "START"}).addTo(this.map)
-		L.marker(endLagLng, {title: "END"}).addTo(this.map)
-
-		fetchRoute(startLagLng, endLagLng, profile).then((data) => {
-			if (data.code === "Ok") {
-				const route = routeParser.getRoutes(data)[0]
-				if (route) {
-					const leg = routeParser.getLegs(route)[0]
-					if (leg) {
-						const waypoints = []
-						const steps = routeParser.getSteps(leg)
-						steps.forEach(step => {
-							const intersections = routeParser.getIntersections(step)
-							intersections.forEach(intersection => {
-								const location = get(intersection, "location")
-								if (location) {
-									waypoints.push(reverseLaglng(location))
-								}
-							})
-						})
-
-						this.routeLine = L.polyline(waypoints, {color: get(profiles, [profile, "color"])}).addTo(this.map)
-					}
-				}
-            }
-		})
+				this.routeLine = L.polyline(waypoints, {color: "red"}).addTo(this.map)
+			}
+		}
 	}
 
 	componentDidMount() {
@@ -118,18 +160,24 @@ export default class HomePage extends Component {
 	}
 
 	renderPanel = () => {
-		const selectedProfile = this.state.selectedProfile
+		const { selectedRoute, routes } = this.state
 
 		return (
 			<Panel>
 				<h1>OSRM POC</h1>
-				<Location>Start: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.startLocation  = e.target.value}}></input></Location>
-				<Location>End: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.endLocation  = e.target.value}}></input></Location>
+				<Location>Start: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.startLocation = e.target.value}}></input></Location>
+				<Location>End: <input type="text" placeholder="34.687607,135.525966" onChange={(e) => {this.endLocation = e.target.value}}></input></Location>
+				<GetRouteBtn onClick={this.showRoutes}>Get route</GetRouteBtn>
 				<hr />
 				<RouteTitle>Routes: </RouteTitle>
 				<RouteContainer>
-					<RouteOption isSelected={(selectedProfile === PROFILE_CAR)} onClick={() => this.plotRoute(PROFILE_CAR)}>Car</RouteOption>
-					<RouteOption isSelected={(selectedProfile === PROFILE_BICYCLE)} onClick={() => this.plotRoute(PROFILE_BICYCLE)}>Bicycle</RouteOption>
+					{routes.map((route, index) => 
+						<Route key={index} isSelected={(selectedRoute === index)} onClick={() => this.plotRoute(index)}>
+							<div>By {route.profile}</div>
+							<div>Distance {route.distance}</div>
+							<div>Duration {route.duration}</div>
+						</Route>
+					)}
 				</RouteContainer>
 			</Panel>
 		)
