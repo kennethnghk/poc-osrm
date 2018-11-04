@@ -73,7 +73,7 @@ docker build -t poc-osrm:latest .
 2. Run docker
 
 ```sh
-docker run -p 3000:3000 -v $(pwd):/var/www/app poc-osrm:latest
+docker run -p 3000:3000 poc-osrm:latest
 ```
 
 Then you can run the frontend web by http://localhost:3000/
