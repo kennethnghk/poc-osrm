@@ -6,6 +6,8 @@ This project is POC to make a frontend web application which has the routing map
 
 Openstreetmap and Open source routing machine (OSRM) are applied.
 
+![Web frontend](https://user-images.githubusercontent.com/14119454/47960730-66124b00-e03a-11e8-94d0-636731fe2de5.png)
+
 ## Setup backend
 
 We need to setup the OSRM backend first. We setup according to osrm-backend project : https://github.com/Project-OSRM/osrm-backend
