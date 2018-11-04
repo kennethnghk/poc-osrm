@@ -13,4 +13,5 @@ LICENSE
 .vscode
 *.osrm
 *.md
+kansai*
 yarn.lock
