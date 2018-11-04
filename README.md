@@ -66,6 +66,25 @@ In above example, it is routing from [Osaka Castle, Osaka](https://goo.gl/maps/7
 
 ## Setup frontend
 
+### Run locally
+
+1. Install packages
+```
+yarn
+```
+
+2. Build
+```
+yarn run build
+```
+
+3. Run the server
+```
+yarn run start:prod
+```
+
+### By Docker
+
 1. Build docker image
 
 ```sh
